@@ -1,0 +1,271 @@
+/* ==========================================================================
+   VALENCE KINETICS - 3D Storytelling Gym & Technical Apparel Stylesheet
+   High-Contrast Carbon & Chalk Aesthetic with Kinetic Micro-Interactions
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Carbon Onyx & Chalk White Palette */
+  --bg-deep: #08080a;
+  --bg-carbon: #0f0f13;
+  --bg-card: rgba(18, 18, 24, 0.75);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.25);
+
+  --text-main: #f4f4f6;
+  --text-muted: #9494a0;
+  --text-subtle: #5a5a66;
+
+  --accent-volt: #ccff00;
+  --accent-titanium: #a1a1aa;
+  --accent-white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 3D Storytelling WebGL Canvas */
+#story-3d-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  outline: none;
+}
+
+#story-3d-canvas:active {
+  cursor: grabbing;
+}
+
+/* Atmospheric Grain & Vignette */
+.bg-ambient-vignette {
+  background: 
+    radial-gradient(circle at 50% 30%, rgba(25, 25, 35, 0.6) 0%, rgba(8, 8, 10, 0.95) 75%),
+    #08080a;
+}
+
+/* Glassmorphism Styles */
+.glass-nav-dark {
+  background: rgba(8, 8, 10, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-card-dark {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-card);
+  border-radius: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-dark:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+/* Story Timeline Indicator on Right Edge */
+.story-timeline {
+  position: fixed;
+  right: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.timeline-dot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  cursor: pointer;
+  group: true;
+}
+
+.timeline-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  opacity: 0;
+  transform: translateX(8px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.timeline-dot:hover .timeline-label,
+.timeline-dot.active .timeline-label {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--accent-white);
+}
+
+.timeline-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+  transition: all 0.25s ease;
+}
+
+.timeline-dot.active .timeline-pip {
+  background: var(--accent-volt);
+  transform: scale(1.6);
+  box-shadow: 0 0 10px rgba(204, 255, 0, 0.6);
+}
+
+/* High-Impact Athletic Buttons */
+.btn-volt {
+  position: relative;
+  background: var(--accent-volt);
+  color: #000000;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 20px -3px rgba(204, 255, 0, 0.4);
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.btn-volt:hover {
+  background: #d8ff26;
+  box-shadow: 0 0 30px 0px rgba(204, 255, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-dark-glass {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  transition: all 0.2s ease;
+}
+
+.btn-dark-glass:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Product Tag Pill */
+.product-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+/* Slide-Out Bag / Cart Drawer */
+.cart-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.cart-drawer-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 440px;
+  background: #0d0d12;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 65;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-drawer.active {
+  transform: translateX(0%);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #08080a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Marquee */
+.marquee-gym {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  gap: 3rem;
+  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.marquee-gym-content {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  min-width: 100%;
+  gap: 3rem;
+  animation: scrollMarquee 28s linear infinite;
+}
+
+@keyframes scrollMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - 3rem));
+  }
+}

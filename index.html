@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VALENCE KINETICS — 3D Technical Athletic Apparel & Gym Gear</title>
+  <meta name="description" content="Valence Kinetics is a high-performance athletic brand engineering technical oversized tees, compression shirts, tactical modular gym duffels, and competition lifting gear.">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            volt: '#ccff00',
+            carbon: '#0f0f13',
+            obsidian: '#08080a',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Three.js (r128) for 3D Real-Time WebGL Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="bg-[#08080a] text-zinc-100 antialiased selection:bg-[#ccff00] selection:text-black font-['Plus_Jakarta_Sans']">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-auto"></div>
+
+  <!-- Story Timeline Indicator (Right Screen Edge) -->
+  <aside class="story-timeline hidden lg:flex" aria-label="Story Chapters">
+    <div class="timeline-dot active" data-target="chapter-1">
+      <span class="timeline-label">01 // Genesis</span>
+      <span class="timeline-pip"></span>
+    </div>
+    <div class="timeline-dot" data-target="chapter-2">
+      <span class="timeline-label">02 // Kinetic Fabric</span>
+      <span class="timeline-pip"></span>
+    </div>
+    <div class="timeline-dot" data-target="chapter-3">
+      <span class="timeline-label">03 // Tactical Duffel</span>
+      <span class="timeline-pip"></span>
+    </div>
+    <div class="timeline-dot" data-target="chapter-4">
+      <span class="timeline-label">04 // Gear Archive</span>
+      <span class="timeline-pip"></span>
+    </div>
+    <div class="timeline-dot" data-target="chapter-5">
+      <span class="timeline-label">05 // The Syndicate</span>
+      <span class="timeline-pip"></span>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       SLIDE-OUT SHOPPING BAG / CART DRAWER
+       ======================================================================== -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay"></div>
+  <div id="cart-drawer" class="cart-drawer">
+    
+    <!-- Cart Header -->
+    <div class="p-6 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="shopping-bag" class="w-5 h-5 text-[#ccff00]"></i>
+        <h3 class="text-base font-bold text-white font-['Space_Grotesk'] tracking-wider uppercase">Your Gear Bag</h3>
+        <span class="cart-count-badge text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-white/10 text-[#ccff00]">2</span>
+      </div>
+      <button id="close-cart-btn" class="text-zinc-400 hover:text-white transition-colors" aria-label="Close bag">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Free Shipping Progress Tracker -->
+    <div class="p-4 bg-white/[0.02] border-b border-white/5">
+      <div id="free-shipping-text" class="text-xs text-zinc-300 mb-2">
+        Add <strong class="text-white">$15</strong> more for Free Global Shipping.
+      </div>
+      <div class="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+        <div id="free-shipping-progress" class="h-full bg-[#ccff00] transition-all duration-300" style="width: 85%;"></div>
+      </div>
+    </div>
+
+    <!-- Cart Item List -->
+    <div id="cart-items-container" class="flex-1 overflow-y-auto p-6 space-y-3">
+      <!-- Items dynamically injected via app.js -->
+    </div>
+
+    <!-- Cart Footer & Checkout -->
+    <div class="p-6 border-t border-white/10 bg-[#09090c] space-y-4">
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-zinc-400">Estimated Subtotal</span>
+        <span id="cart-subtotal-val" class="text-xl font-bold font-mono text-white">$193</span>
+      </div>
+      <p class="text-[11px] text-zinc-500">Taxes & shipping calculated at next step. Free 30-day global returns.</p>
+      <button id="checkout-action-btn" class="btn-volt w-full py-3.5 text-xs font-bold tracking-widest flex items-center justify-center gap-2">
+        <span>Proceed to Secure Checkout</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       TOP NAVIGATION BAR
+       ======================================================================== -->
+  <header class="fixed top-0 left-0 right-0 z-40 glass-nav-dark transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 rounded-xl bg-[#ccff00] flex items-center justify-center text-black font-extrabold text-lg shadow-sm font-['Space_Grotesk'] group-hover:scale-105 transition-transform">
+          V
+        </div>
+        <div class="flex flex-col">
+          <span class="text-lg font-bold tracking-widest text-white font-['Space_Grotesk']">VALENCE</span>
+          <span class="text-[9px] tracking-[0.25em] uppercase font-semibold text-zinc-400 font-mono -mt-1">KINETIC DISCIPLINE</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-wider text-zinc-400 font-['Space_Grotesk']">
+        <a href="#chapter-1" class="hover:text-white transition-colors">01 // Genesis</a>
+        <a href="#chapter-2" class="hover:text-white transition-colors">02 // Apparel</a>
+        <a href="#chapter-3" class="hover:text-white transition-colors">03 // Carry</a>
+        <a href="#chapter-4" class="hover:text-white transition-colors">04 // Shop Vault</a>
+        <a href="#chapter-5" class="hover:text-white transition-colors">05 // Syndicate</a>
+      </nav>
+
+      <!-- Cart Action -->
+      <div class="flex items-center gap-4">
+        <button class="open-cart-btn relative p-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-[#ccff00]/50 text-white flex items-center gap-2 transition-all">
+          <i data-lucide="shopping-bag" class="w-4 h-4 text-[#ccff00]"></i>
+          <span class="text-xs font-mono font-bold hidden sm:inline">BAG</span>
+          <span class="cart-count-badge w-4 h-4 rounded-full bg-[#ccff00] text-black text-[10px] font-bold flex items-center justify-center">2</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       CHAPTER 01: THE GENESIS / RAW IRON (3D HERO STAGE)
+       ======================================================================== -->
+  <section id="chapter-1" class="story-section relative min-h-screen pt-32 pb-20 flex flex-col justify-center bg-ambient-vignette overflow-hidden border-b border-white/5">
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 text-center">
+      
+      <!-- Chapter Eyebrow -->
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-zinc-300 mb-6">
+        <span class="w-2 h-2 rounded-full bg-[#ccff00] animate-pulse"></span>
+        <span class="tracking-widest">CHAPTER 01 // THE FORGE</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.05] mb-6 font-['Space_Grotesk']">
+        NOT BUILT FOR THE CASUAL.
+        <br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#ccff00] via-white to-zinc-400">
+          FORGED FOR THE RELENTLESS.
+        </span>
+      </h1>
+
+      <p class="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+        We deconstructed competitive athletic wear, barbell hardware, and modular gym carry. Engineered with mathematical ergonomics, raw French Terry cotton, and aerospace titanium hardware.
+      </p>
+
+      <!-- 3D Interactive Stage -->
+      <div class="max-w-4xl mx-auto relative rounded-3xl glass-card-dark border border-white/10 p-3 sm:p-6 shadow-2xl bg-[#0b0b0f]/80">
+        
+        <!-- Interactive Stage Top Bar -->
+        <div class="flex flex-wrap items-center justify-between pb-3 mb-2 border-b border-white/10 gap-2">
+          
+          <!-- 3D Chapter Switcher Buttons -->
+          <div class="flex items-center gap-1.5 p-1 rounded-xl bg-black/60 border border-white/10">
+            <button class="chapter-switch-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#ccff00] text-black border border-[#ccff00] transition-all" data-chapter="1">
+              01 // Olympic Cast Plate
+            </button>
+            <button class="chapter-switch-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white bg-white/5 border border-white/10 transition-all" data-chapter="2">
+              02 // Kinetic Cloth Wave
+            </button>
+            <button class="chapter-switch-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white bg-white/5 border border-white/10 transition-all" data-chapter="3">
+              03 // Tactical Gym Duffel
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-1.5 text-xs font-mono text-zinc-400">
+            <i data-lucide="move" class="w-3.5 h-3.5 text-[#ccff00]"></i>
+            <span>Drag to rotate 3D view</span>
+          </div>
+        </div>
+
+        <!-- Canvas Viewport -->
+        <div id="story-3d-stage" class="relative w-full h-[400px] sm:h-[480px] rounded-2xl bg-gradient-to-b from-[#0a0a0e] via-[#121218] to-[#0a0a0e] border border-white/5 overflow-hidden flex items-center justify-center">
+          <canvas id="story-3d-canvas"></canvas>
+
+          <!-- Stage Telemetry Overlays -->
+          <div class="absolute bottom-4 left-4 z-10 px-3 py-1.5 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-[11px] font-mono text-zinc-300 pointer-events-none">
+            <span id="stage-chapter-label" class="text-[#ccff00] font-semibold">RAW DISCIPLINE / 20KG OLYMPIC CAST PLATE</span>
+          </div>
+          <div class="absolute bottom-4 right-4 z-10 px-3 py-1.5 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-[11px] font-mono text-zinc-400 pointer-events-none hidden sm:block">
+            <span id="stage-chapter-spec">STEEL HUB • METRIC DUROMETER: 92A • DROP-TESTED</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Scroll Action Prompt -->
+      <div class="mt-12 flex justify-center">
+        <a href="#chapter-2" class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-zinc-400 hover:text-[#ccff00] transition-colors">
+          <span>Explore Chapter 02: Molecular Weave</span>
+          <i data-lucide="arrow-down" class="w-4 h-4 animate-bounce text-[#ccff00]"></i>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       CHAPTER 02: MOLECULAR WEAVE / T-SHIRTS & APPAREL
+       ======================================================================== -->
+  <section id="chapter-2" class="story-section py-28 relative border-b border-white/5 bg-[#09090c]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left Story Text (5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#ccff00]">
+            CHAPTER 02 // MOLECULAR WEAVE
+          </div>
+
+          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-['Space_Grotesk'] leading-[1.1]">
+            Fabric that breathes when your heart rate hits 180.
+          </h2>
+
+          <p class="text-sm sm:text-base text-zinc-400 leading-relaxed">
+            Standard cotton gets soaked, weighs you down, and restricts shoulder rotation during overhead snatches. Our proprietary French Terry and dual-density ribbing flexes with kinetic biomechanics.
+          </p>
+
+          <div class="space-y-4 pt-2">
+            <div class="flex items-start gap-3.5">
+              <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#ccff00] flex-shrink-0">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white font-['Space_Grotesk']">320 GSM French Terry Weight</h4>
+                <p class="text-xs text-zinc-400 mt-0.5">Heavyweight boxy drape that retains structural shape wash after wash.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3.5">
+              <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#ccff00] flex-shrink-0">
+                <i data-lucide="wind" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white font-['Space_Grotesk']">AeroVent™ Back Thermal Grid</h4>
+                <p class="text-xs text-zinc-400 mt-0.5">Laser-perforated scapular zones that expel body heat during heavy sets.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button onclick="window.switch3DChapter(2)" class="btn-dark-glass px-5 py-2.5 text-xs uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="eye" class="w-4 h-4 text-[#ccff00]"></i>
+              <span>Inspect Fabric Simulation in 3D</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Spotlight Product Card (7 cols) -->
+        <div class="lg:col-span-7">
+          <div class="glass-card-dark p-6 sm:p-8 rounded-3xl border border-white/10 relative overflow-hidden bg-[#111116]">
+            
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+              <span class="product-tag text-[#ccff00] border-[#ccff00]/30 bg-[#ccff00]/10 font-bold">
+                SPOTLIGHT // APPAREL
+              </span>
+              <span class="text-xs font-mono text-zinc-500">SKU: VAL-TEE-001</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <!-- Visual Box -->
+              <div class="h-64 rounded-2xl bg-gradient-to-tr from-black via-zinc-900 to-zinc-800 border border-white/5 flex flex-col items-center justify-center relative p-6">
+                <i data-lucide="shirt" class="w-24 h-24 text-zinc-200 stroke-[1.2]"></i>
+                <div class="absolute bottom-3 left-3 text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+                  Color: <span class="text-white font-bold">Onyx Black</span>
+                </div>
+              </div>
+
+              <!-- Product Details -->
+              <div class="space-y-4">
+                <div>
+                  <h3 class="text-xl font-bold text-white font-['Space_Grotesk']">Valence Heavyweight Boxy Tee</h3>
+                  <div class="text-lg font-mono font-bold text-[#ccff00] mt-1">$58 USD</div>
+                </div>
+
+                <p class="text-xs text-zinc-400 leading-relaxed">
+                  Engineered with drop-shoulder tailoring, zero-irritation bonded seams, and pre-shrunk combed organic cotton.
+                </p>
+
+                <!-- Size Selector -->
+                <div>
+                  <label class="block text-xs font-mono text-zinc-400 mb-1.5 uppercase">Select Size</label>
+                  <div class="flex gap-2">
+                    <button class="px-2.5 py-1 text-xs rounded bg-[#ccff00] text-black font-bold border border-[#ccff00]">S</button>
+                    <button class="px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10 hover:border-white/30">M</button>
+                    <button class="px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10 hover:border-white/30">L</button>
+                    <button class="px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10 hover:border-white/30">XL</button>
+                  </div>
+                </div>
+
+                <button onclick="window.addToCart('Valence Heavyweight Boxy Tee', 58, 'Onyx Black', 'L', 'shirt')" class="btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Add to Bag — $58</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       CHAPTER 03: MODULAR CARRY / TACTICAL GYM BAGS
+       ======================================================================== -->
+  <section id="chapter-3" class="story-section py-28 relative border-b border-white/5 bg-[#08080b]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left Product Showcase (7 cols) -->
+        <div class="lg:col-span-7 order-2 lg:order-1">
+          <div class="glass-card-dark p-6 sm:p-8 rounded-3xl border border-white/10 bg-[#111116] relative overflow-hidden">
+            
+            <div class="flex justify-between items-center mb-6">
+              <span class="product-tag text-[#ccff00] border-[#ccff00]/30 bg-[#ccff00]/10 font-bold">
+                SPOTLIGHT // MODULAR CARRY
+              </span>
+              <span class="text-xs font-mono text-zinc-500">45L CAPACITY</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div class="h-64 rounded-2xl bg-gradient-to-tr from-black via-zinc-900 to-zinc-800 border border-white/5 flex flex-col items-center justify-center relative p-6">
+                <i data-lucide="briefcase" class="w-24 h-24 text-zinc-200 stroke-[1.2]"></i>
+                <div class="absolute bottom-3 left-3 text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+                  Material: <span class="text-white font-bold">Cordura® 500D</span>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <h3 class="text-xl font-bold text-white font-['Space_Grotesk']">Tactical Modular Gym Duffel (45L)</h3>
+                  <div class="text-lg font-mono font-bold text-[#ccff00] mt-1">$135 USD</div>
+                </div>
+
+                <p class="text-xs text-zinc-400 leading-relaxed">
+                  Waterproof ballistic nylon construction, isolated odor-sealed lifting shoe vault, and quick-attach magnetic belt straps.
+                </p>
+
+                <div class="text-[11px] font-mono space-y-1 text-zinc-400">
+                  <div class="flex items-center gap-1.5">
+                    <i data-lucide="check" class="w-3.5 h-3.5 text-[#ccff00]"></i>
+                    <span>Fits 2 pairs of lifting shoes + belt + straps</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <i data-lucide="check" class="w-3.5 h-3.5 text-[#ccff00]"></i>
+                    <span>YKK AquaGuard® waterproof zippers</span>
+                  </div>
+                </div>
+
+                <button onclick="window.addToCart('Tactical Modular Gym Duffel (45L)', 135, 'Matte Carbon', 'One Size', 'briefcase')" class="btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Add Duffel to Bag — $135</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right Story Description (5 cols) -->
+        <div class="lg:col-span-5 space-y-6 order-1 lg:order-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-[#ccff00]">
+            CHAPTER 03 // MODULAR CARRY
+          </div>
+
+          <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight font-['Space_Grotesk'] leading-[1.1]">
+            Every compartment engineered for zero friction.
+          </h2>
+
+          <p class="text-sm sm:text-base text-zinc-400 leading-relaxed">
+            Athletes waste mental energy digging for lifting straps, chalk containers, knee sleeves, and damp gym clothes. Our bags use military MOLLE attachment grids and magnetic Fidlock® hardware so your gear is ready in seconds.
+          </p>
+
+          <div class="pt-2">
+            <button onclick="window.switch3DChapter(3)" class="btn-dark-glass px-5 py-2.5 text-xs uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="box" class="w-4 h-4 text-[#ccff00]"></i>
+              <span>Inspect 3D Duffel Geometry</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       CHAPTER 04: THE GEAR VAULT / E-COMMERCE COLLECTION
+       ======================================================================== -->
+  <section id="chapter-4" class="story-section py-28 relative border-b border-white/5 bg-[#09090c]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#ccff00]">
+          CHAPTER 04 // THE VAULT
+        </span>
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white mt-3 mb-4 tracking-tight font-['Space_Grotesk']">
+          The Full Kinetic Collection.
+        </h2>
+        <p class="text-zinc-400 text-sm sm:text-base">
+          Engineered in limited production runs. Once an archive drop sells out, it is retired forever.
+        </p>
+
+        <!-- Category Filters -->
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-8">
+          <button class="category-filter-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#ccff00] text-black transition-all" data-filter="all">
+            All Gear (6)
+          </button>
+          <button class="category-filter-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/5 text-zinc-400 hover:text-white transition-all" data-filter="apparel">
+            T-Shirts & Apparel
+          </button>
+          <button class="category-filter-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/5 text-zinc-400 hover:text-white transition-all" data-filter="bags">
+            Technical Bags
+          </button>
+          <button class="category-filter-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/5 text-zinc-400 hover:text-white transition-all" data-filter="gear">
+            Lifting Hardware
+          </button>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Item 1: Heavyweight Boxy Tee -->
+        <div class="shop-product-card glass-card-dark p-6 rounded-3xl border border-white/10 flex flex-col justify-between" data-category="apparel" data-price="58" data-icon="shirt">
+          <div>
+            <div class="h-56 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center relative p-4 mb-5">
+              <i data-lucide="shirt" class="w-20 h-20 text-zinc-300"></i>
+              <span class="absolute top-3 left-3 product-tag">320 GSM COTTON</span>
+              <span class="absolute top-3 right-3 text-[11px] font-mono text-[#ccff00] font-bold">IN STOCK</span>
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="product-name text-lg font-bold text-white font-['Space_Grotesk']">Valence Boxy Oversized Tee</h3>
+              <span class="product-price text-base font-mono font-bold text-[#ccff00]">$58</span>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">Heavy French Terry with drop-shoulder silhouette and rib collar.</p>
+
+            <!-- Color Options -->
+            <div class="mb-4">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Color: <span class="selected-color-label text-zinc-200">Onyx Black</span></div>
+              <div class="flex gap-2">
+                <button class="color-chip w-5 h-5 rounded-full bg-zinc-950 border border-white/20 ring-2 ring-[#ccff00]" data-color="Onyx Black" title="Onyx Black"></button>
+                <button class="color-chip w-5 h-5 rounded-full bg-zinc-200 border border-white/20" data-color="Chalk White" title="Chalk White"></button>
+                <button class="color-chip w-5 h-5 rounded-full bg-[#3d4432] border border-white/20" data-color="Tactical Olive" title="Tactical Olive"></button>
+              </div>
+            </div>
+
+            <!-- Size Selector -->
+            <div class="mb-5">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Size</div>
+              <div class="flex gap-1.5">
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="S">S</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="M">M</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-[#ccff00] text-black font-bold border border-[#ccff00]" data-size="L">L</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="XL">XL</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="add-product-btn btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add to Bag</span>
+          </button>
+        </div>
+
+        <!-- Item 2: Ribbed Compression Shirt -->
+        <div class="shop-product-card glass-card-dark p-6 rounded-3xl border border-white/10 flex flex-col justify-between" data-category="apparel" data-price="64" data-icon="zap">
+          <div>
+            <div class="h-56 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center relative p-4 mb-5">
+              <i data-lucide="activity" class="w-20 h-20 text-zinc-300"></i>
+              <span class="absolute top-3 left-3 product-tag">SEAMLESS KINETIC</span>
+              <span class="absolute top-3 right-3 text-[11px] font-mono text-[#ccff00] font-bold">LOW STOCK (8)</span>
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="product-name text-lg font-bold text-white font-['Space_Grotesk']">Kinetic Compression Shirt</h3>
+              <span class="product-price text-base font-mono font-bold text-[#ccff00]">$64</span>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">Graduated torso compression with sweat-channeling micro-ribs.</p>
+
+            <div class="mb-4">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Color: <span class="selected-color-label text-zinc-200">Carbon Grey</span></div>
+              <div class="flex gap-2">
+                <button class="color-chip w-5 h-5 rounded-full bg-[#18181f] ring-2 ring-[#ccff00]" data-color="Carbon Grey"></button>
+                <button class="color-chip w-5 h-5 rounded-full bg-[#0a0a0c]" data-color="Pitch Black"></button>
+              </div>
+            </div>
+
+            <div class="mb-5">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Size</div>
+              <div class="flex gap-1.5">
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="S">S</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-[#ccff00] text-black font-bold border border-[#ccff00]" data-size="M">M</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="L">L</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="XL">XL</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="add-product-btn btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add to Bag</span>
+          </button>
+        </div>
+
+        <!-- Item 3: Tactical Modular Duffel -->
+        <div class="shop-product-card glass-card-dark p-6 rounded-3xl border border-white/10 flex flex-col justify-between" data-category="bags" data-price="135" data-icon="briefcase">
+          <div>
+            <div class="h-56 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center relative p-4 mb-5">
+              <i data-lucide="briefcase" class="w-20 h-20 text-zinc-300"></i>
+              <span class="absolute top-3 left-3 product-tag">CORDURA® 500D</span>
+              <span class="absolute top-3 right-3 text-[11px] font-mono text-[#ccff00] font-bold">BESTSELLER</span>
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="product-name text-lg font-bold text-white font-['Space_Grotesk']">Tactical Modular Gym Duffel</h3>
+              <span class="product-price text-base font-mono font-bold text-[#ccff00]">$135</span>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">45L multi-compartment duffel with ventilated shoe storage and belt clips.</p>
+
+            <div class="mb-4">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Color: <span class="selected-color-label text-zinc-200">Matte Carbon</span></div>
+              <div class="flex gap-2">
+                <button class="color-chip w-5 h-5 rounded-full bg-[#121217] ring-2 ring-[#ccff00]" data-color="Matte Carbon"></button>
+                <button class="color-chip w-5 h-5 rounded-full bg-[#2e3128]" data-color="Ranger Green"></button>
+              </div>
+            </div>
+
+            <div class="mb-5">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Size</div>
+              <div class="text-xs font-mono text-zinc-300">45 Liters (Universal Carry-On)</div>
+            </div>
+          </div>
+
+          <button class="add-product-btn btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add to Bag</span>
+          </button>
+        </div>
+
+        <!-- Item 4: Crossbody Chalk & Straps Bag -->
+        <div class="shop-product-card glass-card-dark p-6 rounded-3xl border border-white/10 flex flex-col justify-between" data-category="bags" data-price="48" data-icon="package">
+          <div>
+            <div class="h-56 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center relative p-4 mb-5">
+              <i data-lucide="package" class="w-20 h-20 text-zinc-300"></i>
+              <span class="absolute top-3 left-3 product-tag">MODULAR MOLLE</span>
+              <span class="absolute top-3 right-3 text-[11px] font-mono text-[#ccff00] font-bold">IN STOCK</span>
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="product-name text-lg font-bold text-white font-['Space_Grotesk']">Crossbody Chalk & Strap Pouch</h3>
+              <span class="product-price text-base font-mono font-bold text-[#ccff00]">$48</span>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">Magnetic Fidlock® closure for liquid chalk, wrist wraps, smelling salts, and phone.</p>
+
+            <div class="mb-4">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Color: <span class="selected-color-label text-zinc-200">Pitch Black</span></div>
+              <div class="flex gap-2">
+                <button class="color-chip w-5 h-5 rounded-full bg-[#0a0a0c] ring-2 ring-[#ccff00]" data-color="Pitch Black"></button>
+              </div>
+            </div>
+
+            <div class="mb-5">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Dimensions</div>
+              <div class="text-xs font-mono text-zinc-300">2.5L Capacity • Weatherproof</div>
+            </div>
+          </div>
+
+          <button class="add-product-btn btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add to Bag</span>
+          </button>
+        </div>
+
+        <!-- Item 5: Titanium Lever Lifting Belt -->
+        <div class="shop-product-card glass-card-dark p-6 rounded-3xl border border-white/10 flex flex-col justify-between" data-category="gear" data-price="148" data-icon="disc">
+          <div>
+            <div class="h-56 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center relative p-4 mb-5">
+              <i data-lucide="disc" class="w-20 h-20 text-zinc-300"></i>
+              <span class="absolute top-3 left-3 product-tag">10MM LEATHER</span>
+              <span class="absolute top-3 right-3 text-[11px] font-mono text-[#ccff00] font-bold">IPF APPROVED</span>
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="product-name text-lg font-bold text-white font-['Space_Grotesk']">Titanium Lever Power Belt</h3>
+              <span class="product-price text-base font-mono font-bold text-[#ccff00]">$148</span>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">10mm top-grain vegetable-tanned leather with CNC aerospace alloy lever buckle.</p>
+
+            <div class="mb-4">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Buckle Finish: <span class="selected-color-label text-zinc-200">Brushed Titanium</span></div>
+              <div class="flex gap-2">
+                <button class="color-chip w-5 h-5 rounded-full bg-zinc-400 ring-2 ring-[#ccff00]" data-color="Brushed Titanium"></button>
+                <button class="color-chip w-5 h-5 rounded-full bg-black" data-color="Matte Black"></button>
+              </div>
+            </div>
+
+            <div class="mb-5">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Waist Size</div>
+              <div class="flex gap-1.5">
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="S (26-31\")">S</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-[#ccff00] text-black font-bold border border-[#ccff00]" data-size="M (30-35\")">M</button>
+                <button class="size-btn px-2.5 py-1 text-xs rounded bg-white/5 text-zinc-300 border border-white/10" data-size="L (34-39\")">L</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="add-product-btn btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add to Bag</span>
+          </button>
+        </div>
+
+        <!-- Item 6: Olympic 20kg Cast Bumper Plate -->
+        <div class="shop-product-card glass-card-dark p-6 rounded-3xl border border-white/10 flex flex-col justify-between" data-category="gear" data-price="120" data-icon="circle">
+          <div>
+            <div class="h-56 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center relative p-4 mb-5">
+              <i data-lucide="circle" class="w-20 h-20 text-zinc-300"></i>
+              <span class="absolute top-3 left-3 product-tag">STEEL HUB CORE</span>
+              <span class="absolute top-3 right-3 text-[11px] font-mono text-[#ccff00] font-bold">20KG PAIR</span>
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="product-name text-lg font-bold text-white font-['Space_Grotesk']">Olympic Bumper Plate (20kg)</h3>
+              <span class="product-price text-base font-mono font-bold text-[#ccff00]">$120</span>
+            </div>
+            <p class="text-xs text-zinc-400 mb-4">Precision-calibrated dead-bounce virgin rubber with stainless steel center sleeve.</p>
+
+            <div class="mb-4">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Finish: <span class="selected-color-label text-zinc-200">Raw Carbon</span></div>
+              <div class="flex gap-2">
+                <button class="color-chip w-5 h-5 rounded-full bg-zinc-950 ring-2 ring-[#ccff00]" data-color="Raw Carbon"></button>
+              </div>
+            </div>
+
+            <div class="mb-5">
+              <div class="text-[11px] font-mono text-zinc-500 mb-1.5">Weight Calibration</div>
+              <div class="text-xs font-mono text-zinc-300">±10g Tolerance (IWF Spec)</div>
+            </div>
+          </div>
+
+          <button class="add-product-btn btn-volt w-full py-3 text-xs flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add to Bag</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       CHAPTER 05: THE SYNDICATE / EXCLUSIVE DROPS
+       ======================================================================== -->
+  <section id="chapter-5" class="story-section py-28 relative overflow-hidden bg-[#070709] border-b border-white/5">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      
+      <div class="glass-card-dark rounded-3xl p-8 sm:p-14 border border-white/10 relative overflow-hidden bg-[#0c0c11]">
+        
+        <!-- Ambient Volt Glow -->
+        <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#ccff00]/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <span class="text-xs uppercase font-mono font-bold tracking-widest text-[#ccff00] mb-3 inline-block">
+          CHAPTER 05 // PRIVATE ARCHIVE
+        </span>
+
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight font-['Space_Grotesk']">
+          Drop 004 Is Currently in Production.
+        </h2>
+
+        <p class="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+          Limited to 500 numbered units globally. Enter your email to receive private password access 1 hour prior to general release.
+        </p>
+
+        <!-- Subscription Form -->
+        <form id="drop-form" class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto mb-6">
+          <input 
+            type="email" 
+            required 
+            placeholder="Enter athlete email address..." 
+            class="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-[#ccff00] transition-colors font-mono"
+          >
+          <button type="submit" class="btn-volt px-6 py-3.5 text-xs font-bold whitespace-nowrap w-full sm:w-auto">
+            Reserve Priority Slot
+          </button>
+        </form>
+
+        <div class="flex items-center justify-center gap-6 text-xs text-zinc-500 font-mono">
+          <span>✓ Global Express Dispatch</span>
+          <span>✓ 100% Carbon Neutral</span>
+          <span>✓ Lifetime Stitch Warranty</span>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       FOOTER
+       ======================================================================== -->
+  <footer class="bg-[#050507] py-16 text-xs text-zinc-500 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+        <div class="col-span-2">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-[#ccff00] text-black font-extrabold flex items-center justify-center font-['Space_Grotesk'] text-base">
+              V
+            </div>
+            <span class="text-lg font-bold text-white tracking-widest font-['Space_Grotesk']">VALENCE</span>
+          </div>
+          <p class="text-zinc-400 max-w-xs mb-4 text-xs leading-relaxed">
+            Technical gym apparel, engineered heavyweight oversized shirts, modular carry duffels, and competition powerlifting hardware.
+          </p>
+          <div class="text-[11px] font-mono text-[#ccff00]">
+            ● PRODUCTION RUN 003 ACTIVE • GLOBAL WAREHOUSES DISPATCHING
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-white mb-3 uppercase tracking-wider text-xs font-['Space_Grotesk']">Apparel</h4>
+          <ul class="space-y-2">
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Boxy Oversized Tees</a></li>
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Ribbed Compressions</a></li>
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Pump Covers</a></li>
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Fabric Lab</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-white mb-3 uppercase tracking-wider text-xs font-['Space_Grotesk']">Gear & Bags</h4>
+          <ul class="space-y-2">
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Tactical Duffel (45L)</a></li>
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Chalk & Strap Pouches</a></li>
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Titanium Lever Belts</a></li>
+            <li><a href="#chapter-4" class="hover:text-white transition-colors">Olympic Bumper Plates</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-white mb-3 uppercase tracking-wider text-xs font-['Space_Grotesk']">Athlete Service</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-white transition-colors">Track Global Shipment</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Warranty & Repairs</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Size Guide & Fit Matrix</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Syndicate Membership</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          © 2026 VALENCE KINETICS INC. Engineered for the Relentless. All rights reserved.
+        </div>
+        <div class="flex items-center gap-4 text-zinc-400">
+          <a href="#" class="hover:text-white transition-colors"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+          <a href="#" class="hover:text-white transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+          <a href="#" class="hover:text-white transition-colors"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Custom Logic Script -->
+  <script src="./app.js"></script>
+</body>
+</html>
